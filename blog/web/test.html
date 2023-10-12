@@ -1,0 +1,43 @@
+<h1>Testing Code</h1>
+<div class="highlight"><pre><code class="language-python"><span class="kn">from</span> <span class="nn">markdown_it</span> <span class="kn">import</span> <span class="n">MarkdownIt</span>
+<span class="kn">from</span> <span class="nn">pygments</span> <span class="kn">import</span> <span class="n">highlight</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers</span> <span class="kn">import</span> <span class="n">PythonLexer</span>
+<span class="kn">from</span> <span class="nn">pygments.lexers</span> <span class="kn">import</span> <span class="n">get_lexer_by_name</span>
+<span class="kn">from</span> <span class="nn">pygments.formatters</span> <span class="kn">import</span> <span class="n">HtmlFormatter</span>
+<span class="kn">from</span> <span class="nn">pygments.styles</span> <span class="kn">import</span> <span class="n">get_style_by_name</span>
+
+
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">HtmlFormatter</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;material&#39;</span><span class="p">,</span> <span class="n">nowrap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">highlight_code</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+    <span class="n">lexer</span> <span class="o">=</span> <span class="n">PythonLexer</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">highlight</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">lexer</span><span class="p">,</span> <span class="n">formatter</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">render_code_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;&lt;div class=</span><span class="se">\&quot;</span><span class="s2">highlight</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_block</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &lt;/div&gt;&quot;</span>
+
+<span class="k">def</span> <span class="nf">render_fence_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;&lt;div class=</span><span class="se">\&quot;</span><span class="s2">highlight</span><span class="se">\&quot;</span><span class="s2">&gt;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fence</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span><span class="n">env</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &lt;/div&gt;&quot;</span>
+
+
+<span class="n">mdfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;testmd.md&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">mdfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># Github REST API method</span>
+<span class="c1"># os.system(&quot;gh api --method POST -H \&quot;Accept: application/vnd.github+json\&quot; -H \&quot;X-Github-Api-Version: 2022-11-28\&quot; /markdown -f text=&#39;{0}&#39;&quot;.format(content))</span>
+
+<span class="n">md</span> <span class="o">=</span> <span class="n">MarkdownIt</span><span class="p">(</span><span class="s2">&quot;gfm-like&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;highlight&#39;</span><span class="p">:</span> <span class="n">highlight_code</span><span class="p">,</span> <span class="s1">&#39;typographer&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s1">&#39;table&#39;</span><span class="p">)</span>
+<span class="n">md</span><span class="o">.</span><span class="n">add_render_rule</span><span class="p">(</span><span class="s2">&quot;fence&quot;</span><span class="p">,</span> <span class="n">render_fence_block</span><span class="p">)</span>
+<span class="n">md</span><span class="o">.</span><span class="n">add_render_rule</span><span class="p">(</span><span class="s2">&quot;code_block&quot;</span><span class="p">,</span> <span class="n">render_code_block</span><span class="p">)</span>
+<span class="n">tokens</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">html_text</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<span class="n">htmlfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;test.html&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<span class="n">htmlfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html_text</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">get_style_defs</span><span class="p">(</span><span class="s1">&#39;.highlight&#39;</span><span class="p">))</span>
+</code></pre>
+ </div>

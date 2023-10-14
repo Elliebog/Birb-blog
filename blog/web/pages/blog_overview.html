@@ -1,0 +1,35 @@
+<div class="container">
+    {{~it.posts :post}}
+    <div class="row">
+        <div class="container">
+            <div class="row justify-content-md-center">
+                <div class="col-md-auto">
+                    <img src="{{=post.image}}">
+                </div>
+                <div class="col col-lg-2">
+                    <header class="post-header">
+                        <h2 class="post-title">
+                            <a href="{{=post.link}}">{{=post.title}}</a>
+                        </h2>
+                        <div class="post-meta">
+                            <p class="post-date">{{=post.date}}</p>
+                            <p class="post-author">{{=post.author}}</p>
+                        </div>
+                    </header> 
+                    <p class="post-description">{{=post.description}}</p>
+                    <footer>
+                        <hr class="post-dividor">
+                        <div class="post-tags">
+                            {{~post.tags :tag}}
+                                <a class="post-tag" href="/blog/tagged/{{=tag}}">
+                                    {{=tag}}
+                                </a>
+                            {{~}}
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{~}}
+</div>

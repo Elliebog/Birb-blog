@@ -31,7 +31,7 @@ fastify.get('/', async function handler(request, reply) {
     let content = ''
     if (!fs.existsSync(summaryFilePath)) {
         request.log.error('no summary.json was found ')
-        content = '<h1>No Posts yet :(<h1/>'
+        content = '<h1>No Posts yet :ε<h1/>'
     } else {
         let posts = []
         let summary = fs.readFileSync(summaryFilePath)

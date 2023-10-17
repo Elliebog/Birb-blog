@@ -37,3 +37,9 @@ h1 {
     justify-content: center;
     max-width: fit-content;
 }
+
+.pagecontent {
+    margin: auto;
+    width: 60%;
+    text-align: center;
+}

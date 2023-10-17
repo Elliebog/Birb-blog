@@ -7,7 +7,7 @@ import fs from 'fs'
  * @param {string} htmlfilePath 
  * @param {Function} callback 
  */
-async function generateMarkdown(mdfilePath, htmlfilePath, callback) {
+async function genMarkdown(mdfilePath, htmlfilePath, callback) {
     //setup markdown parser
     var md = new MarkdownIt({
         html: true,
@@ -20,4 +20,4 @@ async function generateMarkdown(mdfilePath, htmlfilePath, callback) {
     fs.writeFileSync(htmlfilePath, rendered.toString())
 }
 
-module.exports = { generateMarkdown }
+export const generateMarkdown = genMarkdown

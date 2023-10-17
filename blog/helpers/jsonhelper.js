@@ -4,7 +4,7 @@
  * @param {object} object the object to check
  * @returns true if all properties exist in the object, false if not
  */
-function hasProperties(propertynames, object) {
+function hasProps(propertynames, object) {
     if (!object) {
         return false
     }
@@ -17,4 +17,4 @@ function hasProperties(propertynames, object) {
     return true
 }
 
-module.exports = { hasProperties }
+export const hasProperties = hasProps

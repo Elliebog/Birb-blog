@@ -3,9 +3,9 @@ import fs from 'fs'
 import doT from 'dot'
 import fastify_static from '@fastify/static'
 import path from 'node:path'
-import generate from './markdownGen/generate.js'
-import jsonhelper from './helpers/jsonhelper.js'
-import templatehelper from './helpers/templatehelper.js'
+import { generateMarkdown } from './markdownGen/generate.js'
+import { hasProperties } from './helpers/jsonhelper.js'
+import { mainTemplate } from './helpers/templatehelper.js'
 
 const fastify = Fastify({ logger: true })
 
@@ -24,7 +24,7 @@ fastify.get('/static/:filetype/:filename', async function handler(request, reply
 })
 
 //Blog section
-fastify.get('/', async function handler(request, reply) {
+fastify.get('/blog/', async function handler(request, reply) {
     let summaryFilePath = 'web/blogposts/summary.json'
 
     //if summary.json doesn't exist -> error
@@ -39,7 +39,7 @@ fastify.get('/', async function handler(request, reply) {
 
         for (let i = 0; i < summary.length; i++) {
             const postentry = summary[i]
-            if (!jsonhelper.hasProperties(properties, summary)) {
+            if (!hasProperties(properties, summary)) {
                 request.log.error('summary.json does not have all of the required properties at index ' + i)
                 continue
             }
@@ -52,38 +52,9 @@ fastify.get('/', async function handler(request, reply) {
         let overviewTemplate = doT.template(fs.readFileSync('web/pages/blog_overview.html').toString())
         content = overviewTemplate(posts)
     }
-    
-    //embed it into main 
-    templatehelper.maintemplate('', content, 'web/templates/main.html')
 
-    // //Update posts info file
-    // // if it doesn't exist create it
-    // const summaryPath = 'web/blogposts/summary.json'
-    // if (fs.existsSync(summaryPath)) {
-    //     let summary = JSON.parse(fs.readFileSync(summaryPath))
-
-    //     //check if summaryData is up to date 
-    //     let filenames = fs.readdirSync('web/blogposts/')
-    //     filenames.pop('summary.json')
-
-    //     for (let i = 0; i < summary.length; i++) {
-    //         const post = summary[i];
-
-    //         //check if last generated html is still up to date
-    //         let modTime = fs.statSync('web/genblogposts/' + post.filename + '.html').mtime
-    //         let genDate = Date.parse(post.genDate)
-
-    //         //if the generated date is older than the modified date of the markdown file -> regenerate 
-    //         if (genDate < modTime) {
-    //             generate.generateMarkdown('web/blogposts/' + post.filename + '.md', 'web/genblogposts/' + post.filename + '.html')
-    //         }
-
-    //         post.genDate = 
-    //     }
-    // }
-    // else {
-
-    // }
+    //embed it into main and send the reply back
+    reply.type('text/html').send(mainTemplate('', content, 'web/templates/main.html'))
 })
 
 

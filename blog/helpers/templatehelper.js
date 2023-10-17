@@ -8,9 +8,9 @@ import fs from 'fs'
  * @param {string} templatePath File path of the template 
  * @returns The String after the applied template
  */
-function maintemplate(includes, content, templatePath) {
+function template(includes, content, templatePath) {
     const mainTemplate = doT.template(fs.readFileSync(templatePath))
     return mainTemplate({ content: content, includes: includes })
 }
 
-module.exports = { maintemplate }
+export const mainTemplate = template

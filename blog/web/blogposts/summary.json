@@ -1,0 +1,12 @@
+[
+    {
+        "filename": "./testpost.md",
+        "image": "/static/img/mimi_eepy.png",
+        "link": "https://elliebird.eu/blog/posts/testpost",
+        "title": "Test",
+        "date": "17-10-2023",
+        "author": "Elliebird",
+        "description": "How to test your shitty blog site",
+        "tags": ["i3", "sway", "testing"]
+    }
+]

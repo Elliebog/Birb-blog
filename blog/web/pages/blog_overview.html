@@ -1,12 +1,12 @@
 <div class="container">
     {{~it.posts :post}}
-    <div class="row">
+    <div class="row post-card">
         <div class="container">
-            <div class="row justify-content-md-center">
+            <div class="row">
                 <div class="col-md-auto">
-                    <img src="{{=post.image}}">
+                    <img class="post-image" src="{{=post.image}}">
                 </div>
-                <div class="col col-lg-2">
+                <div class="col">
                     <header class="post-header">
                         <h2 class="post-title">
                             <a href="{{=post.link}}">{{=post.title}}</a>

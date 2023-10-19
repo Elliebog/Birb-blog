@@ -1,6 +1,7 @@
 body {
-    background-color: #ffc0cb;
-    color: #8a2be2;
+    background-color: #ffabb9;
+    /*color: #8a2be2;*/
+    color: #8b43ba;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -41,5 +42,4 @@ h1 {
 .pagecontent {
     margin: auto;
     width: 60%;
-    text-align: center;
 }

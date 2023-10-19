@@ -1,0 +1,14 @@
+.post-card {
+    padding: 10px;
+    border-radius: 25px;
+    background-color: #df8e9c;
+    max-height: 25vh;
+}
+
+.post-card h2 {
+    font-size: 25px;
+}
+
+.post-card:hover {
+    background-color: #df8e9c;
+}

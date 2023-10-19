@@ -25,21 +25,23 @@ fastify.get('/static/:filetype/:filename', async function handler(request, reply
 
 //Blog section
 fastify.get('/blog/', async function handler(request, reply) {
-    let summaryFilePath = 'web/blogposts/summary.json'
+    const summaryFilePath = 'web/blogposts/summary.json'
+
+    let includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 
     //if summary.json doesn't exist -> error
     let content = ''
     if (!fs.existsSync(summaryFilePath)) {
         request.log.error('no summary.json was found ')
-        content = '<h1>No Posts yet :ε<h1/>'
+        content = '<h1 style="text-align: center">No Posts yet :ε<h1/>'
     } else {
         let posts = []
-        let summary = fs.readFileSync(summaryFilePath)
+        let summary = JSON.parse(fs.readFileSync(summaryFilePath))
         let properties = ['filename', 'image', 'link', 'title', 'date', 'author', 'description', 'tags']
-
+        
         for (let i = 0; i < summary.length; i++) {
             const postentry = summary[i]
-            if (!hasProperties(properties, summary)) {
+            if (!hasProperties(properties, postentry)) {
                 request.log.error('summary.json does not have all of the required properties at index ' + i)
                 continue
             }
@@ -50,11 +52,12 @@ fastify.get('/blog/', async function handler(request, reply) {
 
         //render with doT template
         let overviewTemplate = doT.template(fs.readFileSync('web/pages/blog_overview.html').toString())
-        content = overviewTemplate(posts)
+        content = overviewTemplate({posts: posts})
+        
     }
 
     //embed it into main and send the reply back
-    reply.type('text/html').send(mainTemplate('', content, 'web/templates/main.html'))
+    reply.type('text/html').send(mainTemplate(includes, content, 'web/templates/main.html'))
 })
 
 

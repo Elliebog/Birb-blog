@@ -1,14 +1,47 @@
+:root {
+    --post-card-height: 25vh;
+}
+
 .post-card {
     padding: 10px;
     border-radius: 25px;
     background-color: #df8e9c;
-    max-height: 25vh;
+}
+
+.post-image {
+    height: var(--post-card-height);
 }
 
 .post-card h2 {
-    font-size: 25px;
+    font-size: calc(var(--post-card-height) * 0.2);
 }
 
-.post-card:hover {
-    background-color: #df8e9c;
+.post-info {
+    display: flex;
+    flex-direction: column;
+    font-size: calc(var(--post-card-height) * 0.08);
+}
+
+.post-info {
+    line-height: calc(var(--post-card-height) * 0.06);
+}
+
+.post-description {
+    flex-grow: 4;
+}
+
+.post-tags {
+    margin: 10px;
+}
+
+.post-tag {
+    background-color: #D162A4;
+    color: #A30262;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding-left: 5px;
+    padding-right: 3px;
+    padding-bottom: 3px;
+    border-radius: 3px;
+
 }

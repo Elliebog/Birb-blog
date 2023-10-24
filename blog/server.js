@@ -4,11 +4,35 @@ import doT from 'dot'
 import fastify_static from '@fastify/static'
 import path from 'node:path'
 import { generateMarkdown } from './markdownGen/generate.js'
-import { hasProperties } from './helpers/jsonhelper.js'
 import { mainTemplate } from './helpers/templatehelper.js'
 import { getPosts } from './helpers/requesthelper.js'
 
 const fastify = Fastify({ logger: true })
+
+//#region Resource Include Constants
+const INCLUDEBLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
+//#endregion
+
+//#region Functions
+/**
+ * Get the summary from the summary.json file 
+ * @param {import('fastify').FastifyRequest} request 
+ * @returns the summary array
+ */
+function getSummary(request) {
+    const summaryFilePath = 'web/blogposts/summary.json'
+    let summary = []
+
+    //if summary.json doesn't exist -> error
+    if (!fs.existsSync(summaryFilePath)) {
+        request.log.error('no summary.json was found')
+    } else {
+        summary = JSON.parse(fs.readFileSync(summaryFilePath))
+    }
+    return summary
+}
+//#endregion 
+
 
 //setup Static files
 fastify.register(fastify_static, {
@@ -26,25 +50,27 @@ fastify.get('/static/:filetype/:filename', async function handler(request, reply
 
 //Blog section
 fastify.get('/blog/', async function handler(request, reply) {
-    const summaryFilePath = 'web/blogposts/summary.json'
-    let summary = []
+    const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 
-    //if summary.json doesn't exist -> error
-    let content = ''
-    if (!fs.existsSync(summaryFilePath)) {
-        request.log.error('no summary.json was found')
-        content = getPosts(summary, request)
-    } else {
-        let posts = []
-        summary = JSON.parse(fs.readFileSync(summaryFilePath))
-        content = getPosts(summary, request)    
-    }
-
+    //get the summary and from the summary get posts
+    let summary = getSummary(request)
+    let content = getPosts(summary, request)    
     //embed it into main and send the reply back
-    reply.type('text/html').send(mainTemplate(includes, content, 'web/templates/main.html'))
+    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, content, 'web/templates/main.html'))
 })
 
+//list tagged blogs
+fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
+    const { tag } = request.params
 
+    //get summary and filter out posts that aren't tagged with that tag
+    let summary = getSummary(request).filter((post) => post.tags.includes(tag))
+    let content = getPosts(summary, request)
+    let msg = '<h3 style="text-align: center"> Posts tagged with ' + tag + '</h3>'
+
+    //embed into main and send reply
+    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
+})
 //Post information in summary file
 /**
  * filename: of the .md file

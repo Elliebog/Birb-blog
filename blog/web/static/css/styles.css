@@ -15,7 +15,12 @@ a:hover {
 }
 
 #site_header {
-    text-align: center;   
+    text-align: center;
+    margin-bottom: 0;
+}
+
+#header_hr {
+    margin: 0px 5vw 3vh 5vw;
 }
 
 h1 {

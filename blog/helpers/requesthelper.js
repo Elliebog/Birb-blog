@@ -1,4 +1,6 @@
-import { hasProperties } from "./jsonhelper";
+import { hasProperties } from "./jsonhelper.js";
+import doT from 'dot'
+import fs from 'fs'
 
 /**
  * Get the posts formatted as html from the given summary

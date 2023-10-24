@@ -48,6 +48,7 @@ fastify.get('/static/:filetype/:filename', async function handler(request, reply
     return reply
 })
 
+//#region GET requests
 //Blog section
 fastify.get('/blog/', async function handler(request, reply) {
     const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
@@ -106,8 +107,16 @@ fastify.get('/', async function handler(request, reply) {
     reply.type('text/html').send(templateFn({ content: contentdata.toString() }))
     return reply
 })
+//#endregion
 
+//#region POST/PATCH requests
+fastify.post('/blog', async function handler(request, reply) {
+    request.log.info(request.headers)
+    request.log.info(request.body)
+})
+//#endregion
 
+//start server
 try {
     await fastify.listen({ port: 3000 })
 } catch (err) {

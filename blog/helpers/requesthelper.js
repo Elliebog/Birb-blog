@@ -8,7 +8,7 @@ import fs from 'fs'
  * @param {import("fastify").FastifyRequest} request 
  * @returns the resulting html section as a string 
  */
-function getposts(summary, request) {
+export function getPosts(summary, request) {
     const emptySummaryMsg = '<h1 style="text-align: center">No Posts yet :ε<h1/>'
     const postProps = ['filename', 'image', 'link', 'title', 'date', 'author', 'description', 'tags']
 
@@ -38,4 +38,47 @@ function getposts(summary, request) {
     return content
 }
 
-export const getPosts = getposts
+export const ValidationSchemasParts = {
+    createBlogPostQuery: {
+        type: 'object',
+        properties: {
+            Name: {
+                type: 'string'
+            },
+            Image_src: {
+                type: 'string'
+            },
+            Title: {
+                type: 'string'
+            },
+            Author: {
+                type: 'string'
+            },
+            Date: {
+                type: 'string'
+            },
+            Description: {
+                type: 'string'
+            },
+            Tags: {
+                type: 'array',
+                items: { type: 'string' }
+            }
+        },
+        required: ['Name', 'Image_src', 'Title', 'Author', 'Date', 'Description', 'Tags']
+    },
+    authenticationHeader: {
+        type: 'object',
+        properties: {
+            APIKey: { type: 'string' }
+        },
+        required: ['APIKey']
+    }
+}
+
+export const ValidationSchemas = {
+    createBlogPost: {
+        query: ValidationSchemasParts.createBlogPostQuery,
+        headers: ValidationSchemasParts.authenticationHeader
+    }
+}

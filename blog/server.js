@@ -3,11 +3,18 @@ import fs from 'fs'
 import doT from 'dot'
 import fastify_static from '@fastify/static'
 import path from 'node:path'
+import qs from 'qs'
 import { generateMarkdown } from './markdownGen/generate.js'
 import { mainTemplate } from './helpers/templatehelper.js'
-import { getPosts } from './helpers/requesthelper.js'
+import { getPosts, ValidationSchemas } from './helpers/requesthelper.js'
+import { checkApiKey } from './helpers/authhelper.js'
+import { AuthenticationError } from './helpers/errorhelper.js'
 
-const fastify = Fastify({ logger: true })
+//setup different querystring parser to be able to specify arrays with commas
+const fastify = Fastify({
+    logger: true,
+    querystringParser: str => qs.parse(str, { comma: true })
+})
 
 //#region Resource Include Constants
 const INCLUDEBLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
@@ -55,7 +62,7 @@ fastify.get('/blog/', async function handler(request, reply) {
 
     //get the summary and from the summary get posts
     let summary = getSummary(request)
-    let content = getPosts(summary, request)    
+    let content = getPosts(summary, request)
     //embed it into main and send the reply back
     reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, content, 'web/templates/main.html'))
 })
@@ -110,7 +117,12 @@ fastify.get('/', async function handler(request, reply) {
 //#endregion
 
 //#region POST/PATCH requests
-fastify.post('/blog', async function handler(request, reply) {
+fastify.post('/blog/createPost', { schema: ValidationSchemas.createBlogPost }, async function handler(request, reply) {
+    //check authorization
+    if(!checkApiKey(request.headers.apikey)) {
+        throw new AuthenticationError("APIKey is not authorized to use this method")
+    }
+    request.log.info(request.query)
     request.log.info(request.headers)
     request.log.info(request.body)
 })

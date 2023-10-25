@@ -4,11 +4,11 @@ import doT from 'dot'
 import fastify_static from '@fastify/static'
 import path from 'node:path'
 import qs from 'qs'
-import { generateMarkdown } from './markdownGen/generate.js'
-import { mainTemplate } from './helpers/templatehelper.js'
-import { getPosts, ValidationSchemas } from './helpers/requesthelper.js'
-import { checkApiKey } from './helpers/authhelper.js'
-import { AuthenticationError } from './helpers/errorhelper.js'
+import { generateMarkdown } from './helpers/markdown.js'
+import { mainTemplate } from './helpers/templates.js'
+import { addPost, getPosts, ValidationSchemas } from './helpers/requesthelper.js'
+import { checkApiKey } from './helpers/authentication.js'
+import { AuthenticationError, PostExistsError } from './helpers/error.js'
 
 //setup different querystring parser to be able to specify arrays with commas
 const fastify = Fastify({
@@ -79,28 +79,6 @@ fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
     //embed into main and send reply
     reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
 })
-//Post information in summary file
-/**
- * filename: of the .md file
- * genDate: last time the corresponding html files were created
- * title
- * date
- * author
- * description
- * tags
- */
-
-// Post information needed for summary template
-/**
- * post:
- *  - image
- *  - link
- *  - title
- *  - date
- *  - author
- *  - description
- *  - tags [tag1,tag2,...]
- */
 
 fastify.get('/', async function handler(request, reply) {
     const template = fs.readFileSync('web/templates/main.html')
@@ -119,12 +97,24 @@ fastify.get('/', async function handler(request, reply) {
 //#region POST/PATCH requests
 fastify.post('/blog/createPost', { schema: ValidationSchemas.createBlogPost }, async function handler(request, reply) {
     //check authorization
-    if(!checkApiKey(request.headers.apikey)) {
-        throw new AuthenticationError("APIKey is not authorized to use this method")
+    if (!checkApiKey(request.headers.apikey)) {
+        throw new AuthenticationError("This APIKey is not authorized to use this method")
     }
-    request.log.info(request.query)
-    request.log.info(request.headers)
-    request.log.info(request.body)
+
+    //Check if post already exists -> if not update summary
+    if (!addPost(request.query)) {
+        throw new PostExistsError("Post with that name already exists. Use the PATCH request if you want to edit this post")
+    }
+
+    //Body = Markdown-file
+    //save Body as file to blogposts
+    let markdownpath = 'web/blogposts/markdown/' + request.query.name + '.md'
+    fs.writeFileSync(markdownpath, request.body)
+
+    //generate Html file from that markdown and update summary.json
+    generateMarkdown(markdownpath, 'web/blogposts/html/' + request.query.name + '.md')
+
+    reply.code(201).send({ link: '/blog/posts/' + request.body.name })
 })
 //#endregion
 

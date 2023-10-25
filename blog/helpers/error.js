@@ -10,3 +10,9 @@ export class AuthenticationError extends HTTPError {
         super(403, message)
     }
 }
+
+export class PostExistsError extends HTTPError {
+    constructor(message) {
+        super(409, message)
+    }
+}

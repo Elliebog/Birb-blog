@@ -1,4 +1,4 @@
-import { hasProperties } from "./jsonhelper.js";
+import { hasProperties } from "./json.js";
 import doT from 'dot'
 import fs from 'fs'
 
@@ -10,7 +10,7 @@ import fs from 'fs'
  */
 export function getPosts(summary, request) {
     const emptySummaryMsg = '<h1 style="text-align: center">No Posts yet :ε<h1/>'
-    const postProps = ['filename', 'image', 'link', 'title', 'date', 'author', 'description', 'tags']
+    const postProps = ['name', 'image', 'link', 'title', 'date', 'author', 'description', 'tags']
 
     let content = ''
     let posts = []
@@ -36,6 +36,32 @@ export function getPosts(summary, request) {
         content = overviewTemplate({ posts: posts })
     }
     return content
+}
+/**
+ * Adds a postentry to the summary JSON file, if a post with the same name doesn't already exist
+ * @param {object} postinfo 
+ * @returns @true if the addition was successful
+ */
+export function addPost(postinfo) {
+    let summary = JSON.parse(fs.readFileSync('web/blogposts/summary.json'))
+    if(summary.some((post) => post.name == postinfo.name)) {
+        return false
+    }
+
+    summary.push({
+        name: postinfo.name,
+        image: postinfo.image_src,
+        link: '/blog/posts/' + postinfo.name,
+        title: postinfo.title,
+        date: postinfo.date,
+        author: postinfo.author,
+        description: postinfo.description,
+        tags: postinfo.tags
+    })
+
+    //write summary to file
+    fs.writeFileSync('web/blogposts/summary.json', JSON.stringify(summary))
+    return true
 }
 
 export const ValidationSchemasParts = {

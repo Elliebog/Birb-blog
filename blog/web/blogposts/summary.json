@@ -1,8 +1,8 @@
 [
     {
-        "filename": "./testpost.md",
+        "name": "testpost",
         "image": "/static/img/mimi_eepy.png",
-        "link": "https://elliebird.eu/blog/posts/testpost",
+        "link": "/blog/posts/testpost",
         "title": "Test",
         "date": "17-10-2023",
         "author": "Elliebird",

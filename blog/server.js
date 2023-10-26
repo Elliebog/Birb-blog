@@ -6,7 +6,7 @@ import path from 'node:path'
 import qs from 'qs'
 import { generateMarkdown } from './helpers/markdown.js'
 import { mainTemplate, postTemplate } from './helpers/templates.js'
-import { addPost, getPosts, ValidationSchemas } from './helpers/requesthelper.js'
+import { addPost, generatePost, getPosts, getSummary, ValidationSchemas } from './helpers/requesthelper.js'
 import { checkApiKey } from './helpers/authentication.js'
 import { AuthenticationError, MarkdownGenerationError, PostDoesntExistError, PostExistsError } from './helpers/error.js'
 
@@ -19,27 +19,6 @@ const fastify = Fastify({
 //#region Resource Include Constants
 const INCLUDEBLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 //#endregion
-
-//#region Functions
-/**
- * Get the summary from the summary.json file 
- * @param {import('fastify').FastifyRequest} request 
- * @returns the summary array
- */
-function getSummary(request) {
-    const summaryFilePath = 'web/blogposts/summary.json'
-    let summary = []
-
-    //if summary.json doesn't exist -> error
-    if (!fs.existsSync(summaryFilePath)) {
-        request.log.error('no summary.json was found')
-    } else {
-        summary = JSON.parse(fs.readFileSync(summaryFilePath))
-    }
-    return summary
-}
-//#endregion 
-
 
 //setup common redirection in case people mistype url
 fastify.get('/blog/', async function handler(request, reply) {
@@ -92,13 +71,13 @@ fastify.get('/blog/posts/:postname', async function handler(request, reply) {
     //display post
     //first embed post into post.html template then into main.html template
     let postinfo = getSummary(request).find((post) => post.name == postname)
-    if(postinfo === undefined) {
+    if (!postinfo) {
         throw new PostDoesntExistError("No Post with such a title exists")
     }
     //only display if such a post even exists
     let htmlContent = fs.readFileSync('web/blogposts/html/' + postname + '.html').toString()
     let result = mainTemplate(includes, postTemplate(postinfo, htmlContent))
-    
+
     //send back
     reply.type('text/html').send(result)
 })
@@ -125,30 +104,62 @@ fastify.post('/blog/createPost', { schema: ValidationSchemas.createBlogPost }, a
     }
 
     //Check if post already exists -> if not update summary
-    if (!addPost(request.query)) {
+    if (!addPost(request, request.query)) {
         throw new PostExistsError("Post with that name already exists. Use the PATCH request if you want to edit this post")
     }
 
-    let markdownpath = 'web/blogposts/markdown/' + request.query.name + '.md'
-    let htmlpath = 'web/blogposts/html/' + request.query.name + '.html'
-    try {
-        //Body = Markdown-file
-        //save Body as file to blogposts
-        fs.writeFileSync(markdownpath, request.body)
-
-        //generate Html file from that markdown
-        generateMarkdown(markdownpath, htmlpath)
-    } catch (err) {
-        //delete generated files
-        fs.rmSync(markdownpath)
-        fs.rmSync(htmlpath)
-
-        //log error and raise http error
-        request.log.error(err)
-        throw new MarkdownGenerationError("Couldn't generate Markdown. Please check the syntax and docs")
-    }
+    generatePost(request, request.query.name)
 
     reply.code(201).send({ link: '/blog/posts/' + request.query.name })
+})
+
+fastify.patch('/blog/editPost', { schema: ValidationSchemas.editBlogPost }, async function handler(request, reply) {
+    //check authorization
+    if (!checkApiKey(request.headers.apikey)) {
+        throw new AuthenticationError("This APIKey is not authorized to use this method")
+    }
+
+    //search for post in summary
+    let summary = getSummary(request)
+    let postidx = summary.findIndex((post) => post.name == request.query.identifierName)
+    let postinfo = summary[postidx]
+
+    if (!postinfo) {
+        throw new PostDoesntExistError("Post with this name doesn't exist")
+    }
+
+    //safe identifier name for later use before deleting
+    let identifierName = request.query.identifierName
+
+    //build new dictionary based on query information and postinfo
+    let editInfo = request.query
+    delete editInfo['identifierName']
+    for (let key in postinfo) {
+        if (!editInfo[key]) {
+            editInfo[key] = postinfo[key]
+        }
+    }
+
+    //replace info in summary
+    summary[postidx] = editInfo
+    fs.writeFileSync('web/blogposts/summary.json', JSON.stringify(summary))
+
+    let oldhtmlFile = 'web/blogposts/html/' + identifierName + '.html'
+    let oldmdFile = 'web/blogposts/markdown/' + identifierName + '.md'
+
+    //if the name was changed -> change filenames
+    if (identifierName != editInfo.name) {
+        fs.renameSync(oldhtmlFile, 'web/blogposts/html/' + editInfo.name + '.html')
+        fs.renameSync(oldmdFile, 'web/blogposts/markdown/' + editInfo.name + '.md')
+    }
+
+    //if the body is not empty -> regenerate files
+    if (request.body) {
+        //delete old files
+        fs.rmSync(oldhtmlFile, { force: true })
+        fs.rmSync(oldmdFile, { force: true })
+        generatePost(request, editInfo.name)
+    }
 })
 //#endregion
 

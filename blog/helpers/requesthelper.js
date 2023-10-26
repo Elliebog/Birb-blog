@@ -1,6 +1,7 @@
 import { hasProperties } from "./json.js";
 import doT from 'dot'
 import fs from 'fs'
+import { generateMarkdown } from "./markdown.js";
 
 /**
  * Get the posts formatted as html from the given summary
@@ -42,9 +43,9 @@ export function getPosts(summary, request) {
  * @param {object} postinfo 
  * @returns @true if the addition was successful
  */
-export function addPost(postinfo) {
-    let summary = JSON.parse(fs.readFileSync('web/blogposts/summary.json'))
-    if(summary.some((post) => post.name == postinfo.name)) {
+export function addPost(request, postinfo) {
+    let summary = getSummary()
+    if (summary.some((post) => post.name == postinfo.name)) {
         return false
     }
 
@@ -63,7 +64,47 @@ export function addPost(postinfo) {
     fs.writeFileSync('web/blogposts/summary.json', JSON.stringify(summary))
     return true
 }
+/**
+ * Get the summary from the summary.json file 
+ * @param {import('fastify').FastifyRequest} request 
+ * @returns the summary array
+ */
+export function getSummary(request) {
+    const summaryFilePath = 'web/blogposts/summary.json'
+    let summary = []
 
+    //if summary.json doesn't exist -> error
+    if (!fs.existsSync(summaryFilePath)) {
+        request.log.error('no summary.json was found')
+    } else {
+        summary = JSON.parse(fs.readFileSync(summaryFilePath))
+    }
+    return summary
+}
+/**
+ * Generate the Html and Markdown files
+ * @param {string} filename 
+ */
+export function generatePost(request, filename) {
+    let markdownpath = 'web/blogposts/markdown/' + filename + '.md'
+    let htmlpath = 'web/blogposts/html/' + filename + '.html'
+    try {
+        //Body = Markdown-file
+        //save Body as file to blogposts
+        fs.writeFileSync(markdownpath, request.body)
+
+        //generate Html file from that markdown
+        generateMarkdown(markdownpath, htmlpath)
+    } catch (err) {
+        //delete generated files
+        fs.rmSync(markdownpath, { force: true })
+        fs.rmSync(htmlpath, { force: true })
+
+        //log error and raise http error
+        request.log.error(err)
+        throw new MarkdownGenerationError("Couldn't generate Markdown. Please check the syntax and docs")
+    }
+}
 export const ValidationSchemasParts = {
     createBlogPostQuery: {
         type: 'object',
@@ -99,12 +140,47 @@ export const ValidationSchemasParts = {
             apikey: { type: 'string' }
         },
         required: ['apikey']
+    },
+    editBlogPostQuery: {
+        type: 'object',
+        properties: {
+            identifierName: {
+                type: 'string'
+            },
+            newName: {
+                type: 'string'
+            },
+            image_src: {
+                type: 'string'
+            },
+            title: {
+                type: 'string'
+            },
+            author: {
+                type: 'string'
+            },
+            date: {
+                type: 'string'
+            },
+            description: {
+                type: 'string'
+            },
+            tags: {
+                type: 'array',
+                items: { type: 'string' }
+            }
+        },
+        required: ['identifierName']
     }
 }
 
 export const ValidationSchemas = {
     createBlogPost: {
         query: ValidationSchemasParts.createBlogPostQuery,
+        headers: ValidationSchemasParts.authenticationHeader
+    },
+    editBlogPost: {
+        query: ValidationSchemasParts.editBlogPostQuery,
         headers: ValidationSchemasParts.authenticationHeader
     }
 }

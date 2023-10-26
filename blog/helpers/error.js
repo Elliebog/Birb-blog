@@ -22,3 +22,9 @@ export class MarkdownGenerationError extends HTTPError {
         super(500, message)
     }
 }
+
+export class PostDoesntExistError extends HTTPError {
+    constructor(message) {
+        super(404, message)
+    }
+}

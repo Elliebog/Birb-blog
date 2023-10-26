@@ -1,0 +1,17 @@
+<div id="postheader">
+    <h1 class="post-title">
+        <a href="{{=it.link}}">{{=it.title}}</a>
+    </h1>
+    <div class="post-meta">
+        <p>{{=it.author}} | {{=it.date}}</p>
+    </div>
+    <div class="post-tags">
+        {{~it.tags :tag}}
+        <a class="post-tag" href="/blog/tagged/{{=tag}}">{{=tag}}</a>
+        {{~}}
+    </div>
+    <hr>
+    <div id="mdContent">
+        {{=it.content}}
+    </div>
+</div>

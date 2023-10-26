@@ -5,10 +5,10 @@ import fastify_static from '@fastify/static'
 import path from 'node:path'
 import qs from 'qs'
 import { generateMarkdown } from './helpers/markdown.js'
-import { mainTemplate } from './helpers/templates.js'
+import { mainTemplate, postTemplate } from './helpers/templates.js'
 import { addPost, getPosts, ValidationSchemas } from './helpers/requesthelper.js'
 import { checkApiKey } from './helpers/authentication.js'
-import { AuthenticationError, MarkdownGenerationError, PostExistsError } from './helpers/error.js'
+import { AuthenticationError, MarkdownGenerationError, PostDoesntExistError, PostExistsError } from './helpers/error.js'
 
 //setup different querystring parser to be able to specify arrays with commas
 const fastify = Fastify({
@@ -78,6 +78,24 @@ fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
 
     //embed into main and send reply
     reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
+})
+
+fastify.get('/blog/posts/:postname', async function handler(request, reply) {
+    const { postname } = request.params
+    const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
+
+    //display post
+    //first embed post into post.html template then into main.html template
+    let postinfo = getSummary(request).find((post) => post.name == postname)
+    if(postinfo === undefined) {
+        throw new PostDoesntExistError("No Post with such a title exists")
+    }
+    //only display if such a post even exists
+    let htmlContent = fs.readFileSync('web/blogposts/html/' + postname + '.html').toString()
+    let result = mainTemplate(includes, postTemplate(postinfo, htmlContent))
+    
+    //send back
+    reply.type('text/html').send(result)
 })
 
 fastify.get('/', async function handler(request, reply) {

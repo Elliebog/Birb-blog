@@ -1,6 +1,7 @@
 import doT from 'dot'
 import fs from 'fs'
-
+const mainTemplatefn = doT.template(fs.readFileSync('web/templates/main.html'))
+const postTemplatefn = doT.template(fs.readFileSync('web/templates/post.html'))
 /**
  * Applies the main template to the content
  * @param {string} includes includes needed for content
@@ -8,7 +9,17 @@ import fs from 'fs'
  * @param {string} templatePath File path of the template 
  * @returns The String after the applied template
  */
-export function mainTemplate(includes, content, templatePath) {
-    const mainTemplate = doT.template(fs.readFileSync(templatePath))
-    return mainTemplate({ content: content, includes: includes })
+export function mainTemplate(includes, content) {
+    return mainTemplatefn({ content: content, includes: includes })
+}
+
+export function postTemplate(metainfo, content) {
+    return postTemplatefn({
+        title: metainfo.title,
+        link: metainfo.link,
+        author: metainfo.author,
+        date: metainfo.date,
+        tags: metainfo.tags,
+        content: content
+    })
 }

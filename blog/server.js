@@ -41,6 +41,11 @@ function getSummary(request) {
 //#endregion 
 
 
+//setup common redirection in case people mistype url
+fastify.get('/blog/', async function handler(request, reply) {
+    reply.code(303).redirect('/blog')
+})
+
 //setup Static files
 fastify.register(fastify_static, {
     root: path.resolve('./web/static'),
@@ -57,7 +62,7 @@ fastify.get('/static/:filetype/:filename', async function handler(request, reply
 
 //#region GET requests
 //Blog section
-fastify.get('/blog/', async function handler(request, reply) {
+fastify.get('/blog', async function handler(request, reply) {
     const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 
     //get the summary and from the summary get posts

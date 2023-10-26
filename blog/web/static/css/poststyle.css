@@ -3,6 +3,7 @@
 }
 
 .post-card {
+    margin: 2vh;
     padding: 10px;
     border-radius: 25px;
     background-color: #df8e9c;

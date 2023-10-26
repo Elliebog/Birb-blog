@@ -8,7 +8,7 @@ import { generateMarkdown } from './helpers/markdown.js'
 import { mainTemplate } from './helpers/templates.js'
 import { addPost, getPosts, ValidationSchemas } from './helpers/requesthelper.js'
 import { checkApiKey } from './helpers/authentication.js'
-import { AuthenticationError, PostExistsError } from './helpers/error.js'
+import { AuthenticationError, MarkdownGenerationError, PostExistsError } from './helpers/error.js'
 
 //setup different querystring parser to be able to specify arrays with commas
 const fastify = Fastify({
@@ -106,15 +106,26 @@ fastify.post('/blog/createPost', { schema: ValidationSchemas.createBlogPost }, a
         throw new PostExistsError("Post with that name already exists. Use the PATCH request if you want to edit this post")
     }
 
-    //Body = Markdown-file
-    //save Body as file to blogposts
     let markdownpath = 'web/blogposts/markdown/' + request.query.name + '.md'
-    fs.writeFileSync(markdownpath, request.body)
+    let htmlpath = 'web/blogposts/html/' + request.query.name + '.html'
+    try {
+        //Body = Markdown-file
+        //save Body as file to blogposts
+        fs.writeFileSync(markdownpath, request.body)
 
-    //generate Html file from that markdown and update summary.json
-    generateMarkdown(markdownpath, 'web/blogposts/html/' + request.query.name + '.md')
+        //generate Html file from that markdown
+        generateMarkdown(markdownpath, htmlpath)
+    } catch (err) {
+        //delete generated files
+        fs.rmSync(markdownpath)
+        fs.rmSync(htmlpath)
 
-    reply.code(201).send({ link: '/blog/posts/' + request.body.name })
+        //log error and raise http error
+        request.log.error(err)
+        throw new MarkdownGenerationError("Couldn't generate Markdown. Please check the syntax and docs")
+    }
+
+    reply.code(201).send({ link: '/blog/posts/' + request.query.name })
 })
 //#endregion
 

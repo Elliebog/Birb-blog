@@ -12,7 +12,7 @@ export function checkApiKey(apiKey) {
     let hash = crypto.createHash('sha512')
     
     let apiKeyHash = hash.update(apiKey).digest('hex')
-    if(!fs.existsSync()) {
+    if(!fs.existsSync('auth/keyhashes.json')) {
         return false
     }    
 

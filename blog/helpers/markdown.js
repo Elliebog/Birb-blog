@@ -16,6 +16,6 @@ export function generateMarkdown(mdfilePath, htmlfilePath) {
     })
 
     //read file and parse then write to 
-    let rendered = md.render(fs.readFileSync(mdfilePath))
+    let rendered = md.render(fs.readFileSync(mdfilePath).toString())
     fs.writeFileSync(htmlfilePath, rendered.toString())
 }

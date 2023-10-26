@@ -68,37 +68,37 @@ export const ValidationSchemasParts = {
     createBlogPostQuery: {
         type: 'object',
         properties: {
-            Name: {
+            name: {
                 type: 'string'
             },
-            Image_src: {
+            image_src: {
                 type: 'string'
             },
-            Title: {
+            title: {
                 type: 'string'
             },
-            Author: {
+            author: {
                 type: 'string'
             },
-            Date: {
+            date: {
                 type: 'string'
             },
-            Description: {
+            description: {
                 type: 'string'
             },
-            Tags: {
+            tags: {
                 type: 'array',
                 items: { type: 'string' }
             }
         },
-        required: ['Name', 'Image_src', 'Title', 'Author', 'Date', 'Description', 'Tags']
+        required: ['name', 'image_src', 'title', 'author', 'date', 'description', 'tags']
     },
     authenticationHeader: {
         type: 'object',
         properties: {
-            APIKey: { type: 'string' }
+            apikey: { type: 'string' }
         },
-        required: ['APIKey']
+        required: ['apikey']
     }
 }
 

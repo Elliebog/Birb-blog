@@ -1,12 +1,1 @@
-[
-    {
-        "name": "testpost",
-        "image": "/static/img/mimi_eepy.png",
-        "link": "/blog/posts/testpost",
-        "title": "Test",
-        "date": "17-10-2023",
-        "author": "Elliebird",
-        "description": "How to test your shitty blog site",
-        "tags": ["i3", "sway", "testing"]
-    }
-]
+[{"name":"testpost","image":"/static/img/mimi_eepy.png","link":"/blog/posts/testpost","title":"Test","date":"17-10-2023","author":"Elliebird","description":"How to test your shitty blog site","tags":["i3","sway","testing"]},{"name":"test-name","image":"/static/img/mimi_eepy.png","link":"/blog/posts/test-name","title":"test-title","date":"25-10-2023","author":"Elliebird","description":"How to test your shitty blog site","tags":["i3","linux","test-tag"]}]

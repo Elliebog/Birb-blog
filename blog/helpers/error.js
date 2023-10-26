@@ -16,3 +16,9 @@ export class PostExistsError extends HTTPError {
         super(409, message)
     }
 }
+
+export class MarkdownGenerationError extends HTTPError {
+    constructor(message) {
+        super(500, message)
+    }
+}

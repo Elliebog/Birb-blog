@@ -4,7 +4,6 @@ import doT from 'dot'
 import fastify_static from '@fastify/static'
 import path from 'node:path'
 import qs from 'qs'
-import { generateMarkdown } from './helpers/markdown.js'
 import { mainTemplate, postTemplate } from './helpers/templates.js'
 import { addPost, generatePost, getPosts, getSummary, ValidationSchemas } from './helpers/requesthelper.js'
 import { checkApiKey } from './helpers/authentication.js'
@@ -160,6 +159,8 @@ fastify.patch('/blog/editPost', { schema: ValidationSchemas.editBlogPost }, asyn
         fs.rmSync(oldmdFile, { force: true })
         generatePost(request, editInfo.name)
     }
+
+    reply.code(200).send({ link: 'web/blog/' + editInfo.name })
 })
 //#endregion
 

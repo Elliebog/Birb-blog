@@ -28,3 +28,9 @@ export class PostDoesntExistError extends HTTPError {
         super(404, message)
     }
 }
+
+export class FileNotFoundError extends HTTPError {
+    constructor(message) {
+        super(500, message)
+    }
+}

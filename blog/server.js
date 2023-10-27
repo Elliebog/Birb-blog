@@ -44,10 +44,11 @@ fastify.get('/blog', async function handler(request, reply) {
     const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 
     //get the summary and from the summary get posts
-    let summary = getSummary(request)
-    let content = getPosts(summary, request)
-    //embed it into main and send the reply back
-    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, content, 'web/templates/main.html'))
+    getSummary((summary) => {
+        let content = getPosts(summary)
+        //embed it into main and send the reply back
+        reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, content))
+    })
 })
 
 //list tagged blogs
@@ -55,12 +56,14 @@ fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
     const { tag } = request.params
 
     //get summary and filter out posts that aren't tagged with that tag
-    let summary = getSummary(request).filter((post) => post.tags.includes(tag))
-    let content = getPosts(summary, request)
-    let msg = '<h3 style="text-align: center"> Posts tagged with ' + tag + '</h3>'
+    getSummary((summary) => {
+        let filteredSummary = summary.filter((post) => post.tags.includes(tag))
+        let content = getPosts(filteredSummary)
+        let msg = '<h3 style="text-align: center"> Posts tagged with ' + tag + '</h3>'
 
-    //embed into main and send reply
-    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
+        //embed into main and send reply
+        reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content)))
+    })
 })
 
 fastify.get('/blog/posts/:postname', async function handler(request, reply) {
@@ -69,98 +72,113 @@ fastify.get('/blog/posts/:postname', async function handler(request, reply) {
 
     //display post
     //first embed post into post.html template then into main.html template
-    let postinfo = getSummary(request).find((post) => post.name == postname)
-    if (!postinfo) {
-        throw new PostDoesntExistError("No Post with such a title exists")
-    }
-    //only display if such a post even exists
-    let htmlContent = fs.readFileSync('web/blogposts/html/' + postname + '.html').toString()
-    let result = mainTemplate(includes, postTemplate(postinfo, htmlContent))
+    let postinfo = getSummary((summary) => {
+        let postinfo = summary.find((post) => post.name == postname)
+        if (!postinfo) {
+            throw new PostDoesntExistError("No Post with such a title exists")
+        }
 
-    //send back
-    reply.type('text/html').send(result)
+        //only display if such a post even exists
+        fs.readFile('web/blogposts/html/' + postname + '.html', (err, data) => {
+            if (err) throw err
+            let result = mainTemplate(includes, postTemplate(postinfo, data.toString()))
+
+            //send back
+            reply.type('text/html').send(result)
+        })
+    })
+
 })
 
 fastify.get('/', async function handler(request, reply) {
-    const template = fs.readFileSync('web/templates/main.html')
-    const contentdata = fs.readFileSync('web/test.html')
-    //apply the Template
-    var templateFn = doT.template(template.toString())
-
-    request.log.info(contentdata.toString())
-
-    //send the compiled file back
-    reply.type('text/html').send(templateFn({ content: contentdata.toString() }))
-    return reply
+    fs.readFile('web/test.html', (err, data) => {
+        if (err) throw err
+        //send the compiled file back
+        reply.type('text/html').send(templateFn({ content: data.toString() }))
+    })
 })
 //#endregion
 
 //#region POST/PATCH requests
 fastify.post('/blog/createPost', { schema: ValidationSchemas.createBlogPost }, async function handler(request, reply) {
     //check authorization
-    if (!checkApiKey(request.headers.apikey)) {
-        throw new AuthenticationError("This APIKey is not authorized to use this method")
-    }
 
-    //Check if post already exists -> if not update summary
-    if (!addPost(request, request.query)) {
-        throw new PostExistsError("Post with that name already exists. Use the PATCH request if you want to edit this post")
-    }
+    checkApiKey(request.headers.apikey, (hasAuth) => {
+        if (!hasAuth) {
+            throw new AuthenticationError("This APIKey is not authorized to use this method")
+        }
+        addPost(request.query, (success) => {
+            //Check if post already exists -> if not update summary
+            if (!success) {
+                throw new PostExistsError("Post with that name already exists. Use the PATCH request if you want to edit this post")
+            }
+        })
+    })
+    generatePost(request.body, request.query.name, (err) => {
+        if (err) {
+            request.log.error(err)
+            throw err
+        }
 
-    generatePost(request, request.query.name)
+        reply.code(201).send({ link: '/blog/posts/' + request.query.name })
+    })
 
-    reply.code(201).send({ link: '/blog/posts/' + request.query.name })
 })
 
 fastify.patch('/blog/editPost', { schema: ValidationSchemas.editBlogPost }, async function handler(request, reply) {
     //check authorization
-    if (!checkApiKey(request.headers.apikey)) {
-        throw new AuthenticationError("This APIKey is not authorized to use this method")
-    }
-
-    //search for post in summary
-    let summary = getSummary(request)
-    let postidx = summary.findIndex((post) => post.name == request.query.identifierName)
-    let postinfo = summary[postidx]
-
-    if (!postinfo) {
-        throw new PostDoesntExistError("Post with this name doesn't exist")
-    }
-
-    //safe identifier name for later use before deleting
-    let identifierName = request.query.identifierName
-
-    //build new dictionary based on query information and postinfo
-    let editInfo = request.query
-    delete editInfo['identifierName']
-    for (let key in postinfo) {
-        if (!editInfo[key]) {
-            editInfo[key] = postinfo[key]
+    checkApiKey(request.headers.apikey, (hasAuth) => {
+        if (!hasAuth) {
+            throw new AuthenticationError("This APIKey is not authorized to use this method")
         }
-    }
+        getSummary((summary) => {
+            let postidx = summary.findIndex((post) => post.name == request.query.identifierName)
+            let postinfo = summary[postidx]
 
-    //replace info in summary
-    summary[postidx] = editInfo
-    fs.writeFileSync('web/blogposts/summary.json', JSON.stringify(summary))
+            if (!postinfo) {
+                throw new PostDoesntExistError("Post with this name doesn't exist")
+            }
 
-    let oldhtmlFile = 'web/blogposts/html/' + identifierName + '.html'
-    let oldmdFile = 'web/blogposts/markdown/' + identifierName + '.md'
+            //safe identifier name for later use before deleting
+            let identifierName = request.query.identifierName
 
-    //if the name was changed -> change filenames
-    if (identifierName != editInfo.name) {
-        fs.renameSync(oldhtmlFile, 'web/blogposts/html/' + editInfo.name + '.html')
-        fs.renameSync(oldmdFile, 'web/blogposts/markdown/' + editInfo.name + '.md')
-    }
+            //build new dictionary based on query information and postinfo
+            let editInfo = request.query
+            delete editInfo['identifierName']
+            for (let key in postinfo) {
+                if (!editInfo[key]) {
+                    editInfo[key] = postinfo[key]
+                }
+            }
 
-    //if the body is not empty -> regenerate files
-    if (request.body) {
-        //delete old files
-        fs.rmSync(oldhtmlFile, { force: true })
-        fs.rmSync(oldmdFile, { force: true })
-        generatePost(request, editInfo.name)
-    }
+            //replace info in summary
+            summary[postidx] = editInfo
 
-    reply.code(200).send({ link: 'web/blog/' + editInfo.name })
+            //write back to summary json
+            fs.writeFile('web/blogposts/summary.json', JSON.stringify(summary), (err) => {
+                if (err) throw err
+            })
+
+            let oldhtmlFile = 'web/blogposts/html/' + identifierName + '.html'
+            let oldmdFile = 'web/blogposts/markdown/' + identifierName + '.md'
+
+            //if the name was changed -> change filenames
+            if (identifierName != editInfo.name) {
+                fs.renameSync(oldhtmlFile, 'web/blogposts/html/' + editInfo.name + '.html')
+                fs.renameSync(oldmdFile, 'web/blogposts/markdown/' + editInfo.name + '.md')
+            }
+
+            //if the body is not empty -> regenerate files
+            if (request.body) {
+                //delete old files
+                fs.rmSync(oldhtmlFile, { force: true })
+                fs.rmSync(oldmdFile, { force: true })
+                generatePost(request, editInfo.name)
+            }
+
+            reply.code(200).send({ link: 'web/blog/' + editInfo.name })
+        })
+    })
 })
 //#endregion
 

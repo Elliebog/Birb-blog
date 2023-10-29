@@ -2,15 +2,14 @@ import { hasProperties } from "./json.js";
 import doT from 'dot'
 import fs from 'fs'
 import { generateMarkdown } from "./markdown.js";
-import { FileNotFoundError } from "./error.js";
-import { overviewTemplate } from "./templates.js";
 
 /**
  * Get the posts formatted as html from the given summary
  * @param {Array} summary 
+ * @param {import("fastify").FastifyRequest} request 
  * @returns the resulting html section as a string 
  */
-export function getPosts(summary) {
+export function getPosts(summary, request) {
     const emptySummaryMsg = '<h1 style="text-align: center">No Posts yet :ε<h1/>'
     const postProps = ['name', 'image', 'link', 'title', 'date', 'author', 'description', 'tags']
 
@@ -34,98 +33,77 @@ export function getPosts(summary) {
         }
 
         //render with doT template
-
-        content = overviewTemplate(posts)
+        let overviewTemplate = doT.template(fs.readFileSync('web/pages/blog_overview.html').toString())
+        content = overviewTemplate({ posts: posts })
     }
     return content
 }
-/**
- * @callback addPostCallback
- * @param {boolean} success the addition was successful 
- */
 /**
  * Adds a postentry to the summary JSON file, if a post with the same name doesn't already exist
  * @param {object} postinfo 
  * @returns @true if the addition was successful
  */
-export function addPost(postinfo, callback) {
-    let summary = getSummary((summary) => {
-        if (summary.some((post) => post.name == postinfo.name)) {
-            callback(false)
-        } else {
-            summary.push({
-                name: postinfo.name,
-                image: postinfo.image_src,
-                link: '/blog/posts/' + postinfo.name,
-                title: postinfo.title,
-                date: postinfo.date,
-                author: postinfo.author,
-                description: postinfo.description,
-                tags: postinfo.tags
-            })
+export function addPost(request, postinfo) {
+    let summary = getSummary()
+    if (summary.some((post) => post.name == postinfo.name)) {
+        return false
+    }
 
-            //write summary to file
-            fs.writeFile('web/blogposts/summary.json', JSON.stringify(summary), (err) => {
-                if (err) throw err
-                callback(true)
-            })
-        }
+    summary.push({
+        name: postinfo.name,
+        image: postinfo.image_src,
+        link: '/blog/posts/' + postinfo.name,
+        title: postinfo.title,
+        date: postinfo.date,
+        author: postinfo.author,
+        description: postinfo.description,
+        tags: postinfo.tags
     })
+
+    //write summary to file
+    fs.writeFileSync('web/blogposts/summary.json', JSON.stringify(summary))
+    return true
 }
-
-/**
- * @callback SummaryCallback
- * @param {object} summary
- */
-
 /**
  * Get the summary from the summary.json file 
  * @param {import('fastify').FastifyRequest} request 
- * @param {ReadFileCallback} callback callback to execute after data has been read
  * @returns the summary array
  */
-export function getSummary(callback) {
+export function getSummary(request) {
     const summaryFilePath = 'web/blogposts/summary.json'
     let summary = []
 
-    fs.readFile(summaryFilePath, (err, data) => {
-        if (err) throw err
-        callback(JSON.parse(data))
-    })
+    //if summary.json doesn't exist -> error
+    if (!fs.existsSync(summaryFilePath)) {
+        request.log.error('no summary.json was found')
+    } else {
+        summary = JSON.parse(fs.readFileSync(summaryFilePath))
+    }
+    return summary
 }
-
 /**
- * @callback generatePostCallback
- * @param {err} err
-*/
-
-/**  
  * Generate the Html and Markdown files
- * @param {string} body
  * @param {string} filename 
- * @param {generatePostCallback} callback 
  */
-export function generatePost(body, filename, callback) {
+export function generatePost(request, filename) {
     let markdownpath = 'web/blogposts/markdown/' + filename + '.md'
     let htmlpath = 'web/blogposts/html/' + filename + '.html'
+    try {
+        //Body = Markdown-file
+        //save Body as file to blogposts
+        fs.writeFileSync(markdownpath, request.body)
 
-    //save body as file to blogposts
-    fs.writeFile(markdownpath, body, (err) => {
-        if (err) callback(err)
-        generateMarkdown(markdownpath, htmlpath, (err) => {
-            if (err) {
-                //delete generated files
-                fs.rmSync(markdownpath, { force: true })
-                fs.rmSync(htmlpath, { force: true })
+        //generate Html file from that markdown
+        generateMarkdown(markdownpath, htmlpath)
+    } catch (err) {
+        //delete generated files
+        fs.rmSync(markdownpath, { force: true })
+        fs.rmSync(htmlpath, { force: true })
 
-                //log error and raise http error
-                request.log.error(err)
-                callback(new MarkdownGenerationError("Couldn't generate Markdown/write body to html. Please check the syntax and docs"))
-            } else {
-                callback(err)
-            }
-        })
-    })
+        //log error and raise http error
+        request.log.error(err)
+        throw new MarkdownGenerationError("Couldn't generate Markdown. Please check the syntax and docs")
+    }
 }
 export const ValidationSchemasParts = {
     createBlogPostQuery: {

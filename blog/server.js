@@ -16,7 +16,8 @@ const fastify = Fastify({
 })
 
 //#region Resource Include Constants
-const INCLUDEBLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
+const BLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
+const HIGHLIGHTCSS = '<link rel="stylesheet" href="/static/css/highlight-ros-pine-moon.css">'
 //#endregion
 
 //setup common redirection in case people mistype url
@@ -47,7 +48,7 @@ fastify.get('/blog', async function handler(request, reply) {
     let summary = getSummary(request)
     let content = getPosts(summary, request)
     //embed it into main and send the reply back
-    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, content, 'web/templates/main.html'))
+    reply.type('text/html').send(mainTemplate(BLOGPOSTCSS, content, 'web/templates/main.html'))
 })
 
 //list tagged blogs
@@ -60,12 +61,12 @@ fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
     let msg = '<h3 style="text-align: center"> Posts tagged with ' + tag + '</h3>'
 
     //embed into main and send reply
-    reply.type('text/html').send(mainTemplate(INCLUDEBLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
+    reply.type('text/html').send(mainTemplate(BLOGPOSTCSS, msg.concat(content), 'web/templates/main.html'))
 })
 
 fastify.get('/blog/posts/:postname', async function handler(request, reply) {
     const { postname } = request.params
-    const includes = '<link rel="stylesheet" href="/static/css/poststyle.css">'
+    const includes = BLOGPOSTCSS + HIGHLIGHTCSS
 
     //display post
     //first embed post into post.html template then into main.html template

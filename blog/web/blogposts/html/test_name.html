@@ -1,43 +1,43 @@
 <h1>Testing Code</h1>
-<pre><code class="language-python">from markdown_it import MarkdownIt
-from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import HtmlFormatter
-from pygments.styles import get_style_by_name
+<pre><code class="language-python"><span class="hljs-keyword">from</span> markdown_it <span class="hljs-keyword">import</span> MarkdownIt
+<span class="hljs-keyword">from</span> pygments <span class="hljs-keyword">import</span> highlight
+<span class="hljs-keyword">from</span> pygments.lexers <span class="hljs-keyword">import</span> PythonLexer
+<span class="hljs-keyword">from</span> pygments.lexers <span class="hljs-keyword">import</span> get_lexer_by_name
+<span class="hljs-keyword">from</span> pygments.formatters <span class="hljs-keyword">import</span> HtmlFormatter
+<span class="hljs-keyword">from</span> pygments.styles <span class="hljs-keyword">import</span> get_style_by_name
 
 
-formatter = HtmlFormatter(style='material', nowrap=True)
+formatter = HtmlFormatter(style=<span class="hljs-string">&#x27;material&#x27;</span>, nowrap=<span class="hljs-literal">True</span>)
 
-def highlight_code(code, name, attr):
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">highlight_code</span>(<span class="hljs-params">code, name, attr</span>):
     lexer = PythonLexer()
-    if name != '':
+    <span class="hljs-keyword">if</span> name != <span class="hljs-string">&#x27;&#x27;</span>:
         lexer = get_lexer_by_name(name)
     
-    return highlight(code, lexer, formatter)
+    <span class="hljs-keyword">return</span> highlight(code, lexer, formatter)
 
-def render_code_block(self, tokens, idx, options, env):
-    return &quot;&lt;div class=\&quot;highlight\&quot;&gt;&quot; + self.code_block(tokens, idx, options, env) + &quot; &lt;/div&gt;&quot;
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">render_code_block</span>(<span class="hljs-params">self, tokens, idx, options, env</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&lt;div class=\&quot;highlight\&quot;&gt;&quot;</span> + self.code_block(tokens, idx, options, env) + <span class="hljs-string">&quot; &lt;/div&gt;&quot;</span>
 
-def render_fence_block(self, tokens, idx, options, env):
-    return &quot;&lt;div class=\&quot;highlight\&quot;&gt;&quot; + self.fence(tokens, idx, options,env) + &quot; &lt;/div&gt;&quot;
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">render_fence_block</span>(<span class="hljs-params">self, tokens, idx, options, env</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;&lt;div class=\&quot;highlight\&quot;&gt;&quot;</span> + self.fence(tokens, idx, options,env) + <span class="hljs-string">&quot; &lt;/div&gt;&quot;</span>
 
 
-mdfile = open(&quot;testmd.md&quot;, &quot;r&quot;)
+mdfile = <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;testmd.md&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>)
 text = mdfile.read()
 
-# Github REST API method
-# os.system(&quot;gh api --method POST -H \&quot;Accept: application/vnd.github+json\&quot; -H \&quot;X-Github-Api-Version: 2022-11-28\&quot; /markdown -f text='{0}'&quot;.format(content))
+<span class="hljs-comment"># Github REST API method</span>
+<span class="hljs-comment"># os.system(&quot;gh api --method POST -H \&quot;Accept: application/vnd.github+json\&quot; -H \&quot;X-Github-Api-Version: 2022-11-28\&quot; /markdown -f text=&#x27;{0}&#x27;&quot;.format(content))</span>
 
-md = MarkdownIt(&quot;gfm-like&quot;, {'html': True, 'highlight': highlight_code, 'typographer': True}).enable('table')
-md.add_render_rule(&quot;fence&quot;, render_fence_block)
-md.add_render_rule(&quot;code_block&quot;, render_code_block)
+md = MarkdownIt(<span class="hljs-string">&quot;gfm-like&quot;</span>, {<span class="hljs-string">&#x27;html&#x27;</span>: <span class="hljs-literal">True</span>, <span class="hljs-string">&#x27;highlight&#x27;</span>: highlight_code, <span class="hljs-string">&#x27;typographer&#x27;</span>: <span class="hljs-literal">True</span>}).enable(<span class="hljs-string">&#x27;table&#x27;</span>)
+md.add_render_rule(<span class="hljs-string">&quot;fence&quot;</span>, render_fence_block)
+md.add_render_rule(<span class="hljs-string">&quot;code_block&quot;</span>, render_code_block)
 tokens = md.parse(text)
 html_text = md.render(text)
 
-htmlfile = open(&quot;test.html&quot;, &quot;w&quot;)
+htmlfile = <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;test.html&quot;</span>, <span class="hljs-string">&quot;w&quot;</span>)
 htmlfile.write(html_text)
 
-print(formatter.get_style_defs('.highlight'))
+<span class="hljs-built_in">print</span>(formatter.get_style_defs(<span class="hljs-string">&#x27;.highlight&#x27;</span>))
 
 </code></pre>

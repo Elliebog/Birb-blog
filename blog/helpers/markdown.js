@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import fs from 'fs'
+import hljs from 'highlight.js'
 
 /**
  * Renders the given markdown file into html and writes it to html file path
@@ -12,7 +13,12 @@ export function generateMarkdown(mdfilePath, htmlfilePath) {
     var md = new MarkdownIt({
         html: true,
         linkify: true,
-        typographer: true
+        typographer: true,
+        highlight: function(str, lang) {
+            if(lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(str, {language: lang}).value
+            }
+        }
     })
 
     //read file and parse then write to 

@@ -17,7 +17,7 @@ const fastify = Fastify({
 
 //#region Resource Include Constants
 const BLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
-const HIGHLIGHTCSS = '<link rel="stylesheet" href="/static/css/highlight-ros-pine-moon.css">'
+const HIGHLIGHTCSS = '<link rel="stylesheet" href="/static/css/highlight-ros-pine-moon.css"><link rel="stylesheet" href="/static/css/highlight.css">'
 //#endregion
 
 //setup common redirection in case people mistype url

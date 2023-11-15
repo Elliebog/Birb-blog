@@ -18,6 +18,7 @@ const fastify = Fastify({
 //#region Resource Include Constants
 const BLOGPOSTCSS = '<link rel="stylesheet" href="/static/css/poststyle.css">'
 const HIGHLIGHTCSS = '<link rel="stylesheet" href="/static/css/highlight-ros-pine-moon.css"><link rel="stylesheet" href="/static/css/highlight.css">'
+const MARKDOWNJS = '<script src="/static/js/copy.js"></script>'
 //#endregion
 
 //setup common redirection in case people mistype url
@@ -66,7 +67,7 @@ fastify.get('/blog/tagged/:tag', async function handler(request, reply) {
 
 fastify.get('/blog/posts/:postname', async function handler(request, reply) {
     const { postname } = request.params
-    const includes = BLOGPOSTCSS + HIGHLIGHTCSS
+    const includes = BLOGPOSTCSS + HIGHLIGHTCSS + MARKDOWNJS
 
     //display post
     //first embed post into post.html template then into main.html template

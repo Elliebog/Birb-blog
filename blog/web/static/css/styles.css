@@ -24,11 +24,11 @@ a:hover {
 }
 
 h1 {
-    font-size:72px;
+    font-size: 72px;
     margin-bottom: 10px;
 }
 
-.inline_image{
+.inline_image {
     height: 1em;
     width: auto;
 }
@@ -48,7 +48,7 @@ h1 {
 .navbar {
     margin-left: auto;
     margin-right: auto;
-    display:flex;
+    display: flex;
     justify-content: center;
     max-width: fit-content;
 }
@@ -56,4 +56,11 @@ h1 {
 .pagecontent {
     margin: auto;
     width: 60%;
+}
+
+#sillyalert {
+    position: sticky;
+    width: fit-content;
+    bottom: 3%;
+    margin: auto;
 }

@@ -2,7 +2,7 @@ import MarkdownIt from 'markdown-it'
 import fs from 'fs'
 import hljs from 'highlight.js'
 
-const copybtnstr = '<div class="position-absolute top-0 end-0 btn copyBtn">Test</div>' 
+const copybtnstr = '<div class="btn copybtn"><i class="fas fa-copy"></i></div>' 
 /**
  * Renders the given markdown file into html and writes it to html file path
  * @param {string} mdfilePath 

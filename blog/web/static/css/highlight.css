@@ -1,3 +1,14 @@
 pre.hljs {
     border-radius: 8px;
 }
+
+.copybtn {
+    position: absolute;
+    top: 2.5%;
+    right: 2%;
+    background-color: #D162A4;
+}
+
+.copybtn:hover {
+    background-color: #920050;
+}

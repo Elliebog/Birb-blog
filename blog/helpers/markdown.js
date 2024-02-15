@@ -18,12 +18,12 @@ export function generateMarkdown(mdfilePath, htmlfilePath) {
         highlight: function (str, lang) {
             if (lang && hljs.getLanguage(lang)) {
                 try {
-                    return '<pre hidden></pre><div class="position-relative"><pre class="hljs"><code class="hljs">' + 
+                    return '<div class="position-relative"><pre class="hljs"><code class="hljs">' + 
                         hljs.highlight(str, { language: lang }).value +
-                        '</code></pre>' + copybtnstr + '</div>'
+                        '</code></pre>' + '<div class="btn copybtn"><i class="fas fa-copy"></i>' + 
+                        '<code class="copycontent" style="display: none;">' + str + '</code></div>' + '</div>'
                 } catch (_) { }
             }
-
         }
 
     })

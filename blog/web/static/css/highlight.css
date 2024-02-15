@@ -12,3 +12,7 @@ pre.hljs {
 .copybtn:hover {
     background-color: #920050;
 }
+
+pre.hidden {
+    visibility: hidden;
+}

@@ -1,5 +1,5 @@
 <h1>Testing Code</h1>
-<pre hidden></pre><div class="position-relative"><pre class="hljs"><code class="hljs"><span class="hljs-keyword">from</span> markdown_it <span class="hljs-keyword">import</span> MarkdownIt
+<pre><code class="language-python"><div class="position-relative"><pre class="hljs"><code class="hljs"><span class="hljs-keyword">from</span> markdown_it <span class="hljs-keyword">import</span> MarkdownIt
 <span class="hljs-keyword">from</span> pygments <span class="hljs-keyword">import</span> highlight
 <span class="hljs-keyword">from</span> pygments.lexers <span class="hljs-keyword">import</span> PythonLexer
 <span class="hljs-keyword">from</span> pygments.lexers <span class="hljs-keyword">import</span> get_lexer_by_name
@@ -40,4 +40,45 @@ htmlfile.write(html_text)
 
 <span class="hljs-built_in">print</span>(formatter.get_style_defs(<span class="hljs-string">&#x27;.highlight&#x27;</span>))
 
-</code></pre><div class="btn copybtn"><i class="fas fa-copy"></i></div></div>
+</code></pre><div class="btn copybtn"><i class="fas fa-copy"></i><code class="copycontent" style="display: none;">from markdown_it import MarkdownIt
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import HtmlFormatter
+from pygments.styles import get_style_by_name
+
+
+formatter = HtmlFormatter(style='material', nowrap=True)
+
+def highlight_code(code, name, attr):
+    lexer = PythonLexer()
+    if name != '':
+        lexer = get_lexer_by_name(name)
+    
+    return highlight(code, lexer, formatter)
+
+def render_code_block(self, tokens, idx, options, env):
+    return "<div class=\"highlight\">" + self.code_block(tokens, idx, options, env) + " </div>"
+
+def render_fence_block(self, tokens, idx, options, env):
+    return "<div class=\"highlight\">" + self.fence(tokens, idx, options,env) + " </div>"
+
+
+mdfile = open("testmd.md", "r")
+text = mdfile.read()
+
+# Github REST API method
+# os.system("gh api --method POST -H \"Accept: application/vnd.github+json\" -H \"X-Github-Api-Version: 2022-11-28\" /markdown -f text='{0}'".format(content))
+
+md = MarkdownIt("gfm-like", {'html': True, 'highlight': highlight_code, 'typographer': True}).enable('table')
+md.add_render_rule("fence", render_fence_block)
+md.add_render_rule("code_block", render_code_block)
+tokens = md.parse(text)
+html_text = md.render(text)
+
+htmlfile = open("test.html", "w")
+htmlfile.write(html_text)
+
+print(formatter.get_style_defs('.highlight'))
+
+</code></div></div></code></pre>

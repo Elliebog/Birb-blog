@@ -171,6 +171,14 @@ export const ValidationSchemasParts = {
             }
         },
         required: ['identifierName']
+    },
+    removePostQuery: {
+        type: 'object',
+        properties: {
+            targetname: {
+                type: 'string'
+            }
+        }
     }
 }
 
@@ -181,6 +189,10 @@ export const ValidationSchemas = {
     },
     editBlogPost: {
         query: ValidationSchemasParts.editBlogPostQuery,
+        headers: ValidationSchemasParts.authenticationHeader
+    },
+    removeBlogPost: {
+        query: ValidationSchemasParts.removePostQuery,
         headers: ValidationSchemasParts.authenticationHeader
     }
 }

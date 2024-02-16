@@ -85,7 +85,7 @@ fastify.get('/blog/posts/:postname', async function handler(request, reply) {
 
 fastify.get('/', async function handler(request, reply) {
     const template = fs.readFileSync('web/templates/main.html')
-    const contentdata = fs.readFileSync('web/test.html')
+    const contentdata = fs.readFileSync('web/pages/profile.html')
     //request.log.info(contentdata.toString())
 
     //send the compiled file back 

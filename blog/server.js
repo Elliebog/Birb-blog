@@ -86,13 +86,10 @@ fastify.get('/blog/posts/:postname', async function handler(request, reply) {
 fastify.get('/', async function handler(request, reply) {
     const template = fs.readFileSync('web/templates/main.html')
     const contentdata = fs.readFileSync('web/test.html')
-    //apply the Template
-    var templateFn = doT.template(template.toString())
+    //request.log.info(contentdata.toString())
 
-    request.log.info(contentdata.toString())
-
-    //send the compiled file back
-    reply.type('text/html').send(templateFn({ content: contentdata.toString() }))
+    //send the compiled file back 
+    reply.type('text/html').send(mainTemplate("", contentdata.toString()));
     return reply
 })
 //#endregion
